@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+<<<<<<< HEAD
 import 'dotenv/config';
 
 
@@ -7,6 +8,12 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED= '0'
 
 const URL_API = "https://api.groq.com/openai/v1/chat/completions"
 const MODELO = "openai/gpt-oss-120b";
+=======
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+>>>>>>> ba7ce330d83f17c70e67eaf0b539726ab3d9d40b
 const app = express();
 const PORT = process.env.PORT || 5500;
 
@@ -16,6 +23,13 @@ app.use(cors());
 
 const user = [];
 
+<<<<<<< HEAD
+=======
+app.get('/', (req, res)=>{
+    return res.json(user);
+})
+
+>>>>>>> ba7ce330d83f17c70e67eaf0b539726ab3d9d40b
 app.post('/cadastro', (req, res)=>{
     const {usuario, email, senha} = req.body;
 
@@ -70,6 +84,7 @@ app.post('/login', (req, res)=>{
         mensagem: "Login realizado com Sucesso!!",
         usuario: emailExiste.email
     });
+<<<<<<< HEAD
 
  })
 
@@ -119,6 +134,9 @@ app.listen(PORT, () => {
     console.log(` Servidor rodando `);
    
 });
+=======
+})
+>>>>>>> ba7ce330d83f17c70e67eaf0b539726ab3d9d40b
 
 app.listen(PORT, ()=>{
     console.log(`Servidor rodando na porta ${PORT}`);
