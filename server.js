@@ -13,10 +13,6 @@ app.use(cors());
 
 const user = [];
 
-app.get('/', (req, res)=>{
-    return res.json(user);
-})
-
 app.post('/cadastro', (req, res)=>{
     const {usuario, email, senha} = req.body;
 
@@ -114,11 +110,6 @@ app.post('/login', (req, res)=>{
     } catch (erro) {
         return res.status(500).json({ erro: "Falha interna no servidor." });
     }
-});
-
-app.listen(PORT, () => {
-    console.log(` Servidor rodando `);
-   
 });
 
 app.listen(PORT, ()=>{
