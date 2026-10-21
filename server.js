@@ -91,7 +91,7 @@ app.post('/chat', async (req, res) => {
         const persona = [
             {
                 role: 'system',
-                content: 'Você é o Kratos responda de forma calma porém violenta e direta'
+                content: 'Você é o Kratos responda de forma calma porém violenta'
             }
         ];
 
