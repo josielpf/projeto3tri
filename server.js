@@ -2,11 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED= '0'
-
-const URL_API = "https://api.groq.com/openai/v1/chat/completions"
-const MODELO = "openai/gpt-oss-120b";
+const URL_API = 'https://api.groq.com/openai/v1/chat/completions';
+const MODELO = 'openai/gpt-oss-120b';
 const app = express();
 const PORT = process.env.PORT || 5500;
 
@@ -16,84 +15,93 @@ app.use(cors());
 
 const user = [];
 
-app.post('/cadastro', (req, res)=>{
-    const {usuario, email, senha} = req.body;
+app.post('/cadastro', (req, res) => {
+    const { usuario, email, senha } = req.body;
 
     if (!usuario || !email || !senha) {
         return res.status(400).json({
-            erro: "Preencha todos os campos"
+            erro: 'Preencha todos os campos'
         });
     }
 
     if (senha.length < 6) {
         return res.status(400).json({
-            erro: "A senha deve ter 6 caracteres ou mais"
+            erro: 'A senha deve ter 6 caracteres ou mais'
         });
     }
 
-    const emailUsado = user.find((busca) => busca.email === email);
+    const emailUsado = user.find((busca) => busca.email.toLowerCase() === email.toLowerCase());
 
     if (emailUsado) {
         return res.status(409).json({
-            erro: "Email já está em uso"
+            erro: 'Email já está em uso'
         });
     }
 
-    console.log(`Recebido, aguarde 5 segundo`);
+    const nomeUsado = user.find((busca) => busca.usuario.toLowerCase() === usuario.toLowerCase());
+    if (nomeUsado) {
+        return res.status(409).json({
+            erro: 'Nome de usuário já está em uso'
+        });
+    }
 
-    user.push({usuario, email, senha});
+    console.log('Recebido, aguarde 5 segundos');
 
-    setTimeout(()=>{
+    user.push({ usuario, email, senha });
+
+    setTimeout(() => {
         console.log(`Cadastrado o ${usuario} com o Email ${email}`);
 
         res.json({
-            mensagem: "Cadastrado com Sucesso!!",
-            perfil: `Perfil ${usuario} cadastrado com o email ${email}`
+            mensagem: 'Cadastrado com Sucesso!!',
+            perfil: `Perfil ${usuario} cadastrado com o email ${email}`,
+            usuario: usuario
         });
     }, 5000);
 });
 
-app.post('/login', (req, res)=>{
-    const {email, senha} = req.body;
-    
+app.post('/login', (req, res) => {
+    const { email, senha } = req.body;
+
     if (!email || !senha) {
-        return res.status(400).json({erro:"Preencha todos os campos"});
+        return res.status(400).json({ erro: 'Preencha todos os campos' });
     }
 
-    const emailExiste = user.find((busca)=> busca.email.toLowerCase() === email.toLowerCase());
+    const emailExiste = user.find(
+        (busca) => busca.email.toLowerCase() === email.toLowerCase()
+    );
 
-    if (!emailExiste || emailExiste.senha != senha) {
-        return res.status(400).json({erro:"Email ou senha incorretos!"});
+    if (!emailExiste || emailExiste.senha !== senha) {
+        return res.status(400).json({ erro: 'Email ou senha incorretos!' });
     }
 
     return res.json({
-        mensagem: "Login realizado com Sucesso!!",
-        usuario: emailExiste.email
+        mensagem: 'Login realizado com Sucesso!!',
+        perfil: `Bem-vindo, ${emailExiste.usuario}!`,
+        usuario: emailExiste.usuario,
+        email: emailExiste.email
     });
+});
 
- })
-
-
- app.post('/chat', async (req, res) => {
+app.post('/chat', async (req, res) => {
     try {
         const API_KEY = process.env.GROQ_API_KEY;
         const historico = req.body.historico || [];
 
         const persona = [
             {
-                role: "system",
-                content: `Você é o Kratos responda de forma calma porém violenta`
+                role: 'system',
+                content: 'Você é o Kratos responda de forma calma porém violenta e direta'
             }
         ];
 
-       
         persona.push(...historico);
 
         const respostaBruta = await fetch(URL_API, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
+                Authorization: `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
                 model: MODELO,
@@ -104,22 +112,16 @@ app.post('/login', (req, res)=>{
         const resultado = await respostaBruta.json();
 
         if (!respostaBruta.ok) {
-            console.log(" Erro retornado pela Groq:", resultado);
-            return res.status(500).json({ erro: "Erro na comunicação com a Groq." });
+            console.log('Erro retornado pela Groq:', resultado);
+            return res.status(500).json({ erro: 'Erro na comunicação com a Groq.' });
         }
 
         return res.json({ resposta: resultado.choices[0].message.content });
-
     } catch (erro) {
-        return res.status(500).json({ erro: "Falha interna no servidor." });
+        return res.status(500).json({ erro: 'Falha interna no servidor.' });
     }
 });
 
 app.listen(PORT, () => {
-    console.log(` Servidor rodando `);
-   
-});
-
-app.listen(PORT, ()=>{
     console.log(`Servidor rodando na porta ${PORT}`);
 });

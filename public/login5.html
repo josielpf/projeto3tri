@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
+    <title>Login</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -13,19 +13,17 @@
         <a class="link" href="index.html">Home</a>
         <a class="link" href="galeria.html">Galeria</a>
         <a class="link" href="chat.html">Chat</a>
-        <a class="link" href="cadastro5.html">Cadastro</a>
+        <a class="link" id="linkCadastro" href="cadastro5.html">Cadastro</a>
         <a class="link" href="login5.html">Login</a>
-        
+        <button type="button" id="btnLogout" class="link link-logout" hidden>Log-out</button>
     </nav>
-    
+
     <div class="conteiner-cadastro">
         <div class="conteiner-ch1">
-            <h2>login</h2><br>
+            <h2>Login</h2><br>
         </div>
 
         <div class="login">
-           
-
             <label for="loginEmail">email</label><br>
             <input type="email" id="loginEmail" placeholder="Digite seu email" required><br><br>
 
@@ -33,7 +31,22 @@
             <input type="password" id="loginSenha" placeholder="Digite sua senha" required><br><br>
 
             <button id="btnlogin" class="card">Enviar</button>
-            <div id="loginMensagem" class="mensagem"></div>
+            <div id="loginMensagem" class="mensagem-servidor"></div>
+        </div>
+    </div>
+
+    <div id="modalPosLogin" class="auth-overlay" hidden>
+        <div class="auth-modal">
+            <div class="auth-modal-icon">⚔</div>
+            <h2 class="auth-modal-titulo">Login realizado!</h2>
+            <p class="auth-modal-texto" id="textoPosLogin">
+                Bem-vindo de volta.<br>
+                Você já pode acessar o chat.
+            </p>
+            <div class="auth-modal-botoes">
+                <a href="chat.html" class="auth-btn auth-btn-primario">Ir para o Chat</a>
+                <a href="index.html" class="auth-btn auth-btn-secundario">Voltar ao Home</a>
+            </div>
         </div>
     </div>
 
@@ -42,33 +55,51 @@
     </footer>
 
     <script>
+        const usuarioLogadoMenu = localStorage.getItem('usuarioLogado');
+        const linkCadastro = document.querySelector('#linkCadastro');
+        const btnLogout = document.querySelector('#btnLogout');
+
+        if (usuarioLogadoMenu) {
+            linkCadastro.hidden = true;
+            btnLogout.hidden = false;
+        } else {
+            linkCadastro.hidden = false;
+            btnLogout.hidden = true;
+        }
+
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('usuarioLogado');
+            localStorage.removeItem('emailLogado');
+            window.location.href = 'index.html';
+        });
+
         const btnlogin = document.querySelector('#btnlogin');
         const loginMensagem = document.querySelector('#loginMensagem');
+        const modalPosLogin = document.querySelector('#modalPosLogin');
+        const textoPosLogin = document.querySelector('#textoPosLogin');
 
-        btnlogin.addEventListener('click', async ()=>{
-          
+        btnlogin.addEventListener('click', async () => {
             const emailEntrada = document.querySelector('#loginEmail');
             const senhaEntrada = document.querySelector('#loginSenha');
 
-            
-            const email = emailEntrada.value;
+            const email = emailEntrada.value.trim();
             const senha = senhaEntrada.value;
 
-            if ( !email || !senha) {
-                loginMensagem.innerText = 'Preencha todos os campos antes de enviar!'
-                loginMensagem.style.color = 'red';
+            if (!email || !senha) {
+                loginMensagem.textContent = 'Preencha todos os campos antes de enviar!';
+                loginMensagem.className = 'mensagem-servidor msg-erro';
                 return;
             }
 
-            loginMensagem.innerText = 'Dados enviados aguarde 5 segundos...';
-            loginMensagem.style.color = 'orange';
+            loginMensagem.textContent = 'Dados enviados, aguarde...';
+            loginMensagem.className = 'mensagem-servidor msg-aguardando';
+            btnlogin.disabled = true;
 
-            try{
+            try {
                 const respostaBE = await fetch('http://localhost:5500/login', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        
                         email: email,
                         senha: senha
                     })
@@ -76,23 +107,34 @@
 
                 const dados = await respostaBE.json();
 
-                if(!respostaBE.ok) {
-                    loginMensagem.innerText = `${dados.erro}`;
-                    loginMensagem.style.color = 'red';
+                if (!respostaBE.ok) {
+                    loginMensagem.textContent = dados.erro || 'Erro no login';
+                    loginMensagem.className = 'mensagem-servidor msg-erro';
+                    btnlogin.disabled = false;
                     return;
                 }
 
-                loginMensagem.innerText = `${dados.mensagem}: ${dados.perfil}`;
-                loginMensagem.style.color = 'green';
+                const usuarioLogado = dados.usuario || email;
+                localStorage.setItem('usuarioLogado', usuarioLogado);
+                localStorage.setItem('emailLogado', dados.email || email);
 
-                
+                loginMensagem.textContent = `${dados.mensagem}: ${dados.perfil || usuarioLogado}`;
+                loginMensagem.className = 'mensagem-servidor msg-sucesso';
+
                 emailEntrada.value = '';
                 senhaEntrada.value = '';
-            }
-            catch(erro) {
+
+                textoPosLogin.innerHTML = `Bem-vindo, <strong>${usuarioLogado}</strong>!<br>Você já pode acessar o chat.`;
+
+                setTimeout(() => {
+                    modalPosLogin.hidden = false;
+                }, 600);
+            } catch (erro) {
                 console.error('Erro na requisição:', erro);
-                loginMensagem.innerText = 'Erro ao conectar com o servidor!!';
-                loginMensagem.style.color = 'red';
+                loginMensagem.textContent = 'Erro ao conectar com o servidor!!';
+                loginMensagem.className = 'mensagem-servidor msg-erro';
+            } finally {
+                btnlogin.disabled = false;
             }
         });
     </script>

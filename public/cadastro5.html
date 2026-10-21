@@ -13,11 +13,11 @@
         <a class="link" href="index.html">Home</a>
         <a class="link" href="galeria.html">Galeria</a>
         <a class="link" href="chat.html">Chat</a>
-        <a class="link" href="cadastro5.html">Cadastro</a>
+        <a class="link" id="linkCadastro" href="cadastro5.html">Cadastro</a>
         <a class="link" href="login5.html">Login</a>
-        
+        <button type="button" id="btnLogout" class="link link-logout" hidden>Log-out</button>
     </nav>
-    
+
     <div class="conteiner-cadastro">
         <div class="conteiner-ch1">
             <h2>Cadastro</h2><br>
@@ -34,7 +34,22 @@
             <input type="password" id="cadSenha" placeholder="Digite sua senha" required><br><br>
 
             <button id="btnCadastro" class="card">Enviar</button>
-            <div id="cadMensagem" class="mensagem"></div>
+            <div id="cadMensagem" class="mensagem-servidor"></div>
+        </div>
+    </div>
+
+    <div id="modalPosCadastro" class="auth-overlay" hidden>
+        <div class="auth-modal">
+            <div class="auth-modal-icon">✓</div>
+            <h2 class="auth-modal-titulo">Cadastro concluído!</h2>
+            <p class="auth-modal-texto">
+                Sua conta foi criada com sucesso.<br>
+                Agora faça login para acessar o chat.
+            </p>
+            <div class="auth-modal-botoes">
+                <a href="login5.html" class="auth-btn auth-btn-primario">Ir para Login</a>
+                <a href="index.html" class="auth-btn auth-btn-secundario">Voltar ao Home</a>
+            </div>
         </div>
     </div>
 
@@ -43,31 +58,51 @@
     </footer>
 
     <script>
+        const usuarioLogado = localStorage.getItem('usuarioLogado');
+        const linkCadastro = document.querySelector('#linkCadastro');
+        const btnLogout = document.querySelector('#btnLogout');
+
+        if (usuarioLogado) {
+            linkCadastro.hidden = true;
+            btnLogout.hidden = false;
+        } else {
+            linkCadastro.hidden = false;
+            btnLogout.hidden = true;
+        }
+
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('usuarioLogado');
+            localStorage.removeItem('emailLogado');
+            window.location.href = 'index.html';
+        });
+
         const btnCadastro = document.querySelector('#btnCadastro');
         const cadMensagem = document.querySelector('#cadMensagem');
+        const modalPosCadastro = document.querySelector('#modalPosCadastro');
 
-        btnCadastro.addEventListener('click', async ()=>{
+        btnCadastro.addEventListener('click', async () => {
             const usuarioEntrada = document.querySelector('#cadUsuario');
             const emailEntrada = document.querySelector('#cadEmail');
             const senhaEntrada = document.querySelector('#cadSenha');
 
-            const usuario = usuarioEntrada.value;
-            const email = emailEntrada.value;
+            const usuario = usuarioEntrada.value.trim();
+            const email = emailEntrada.value.trim();
             const senha = senhaEntrada.value;
 
             if (!usuario || !email || !senha) {
-                cadMensagem.innerText = 'Preencha todos os campos antes de enviar!'
-                cadMensagem.style.color = 'red';
+                cadMensagem.textContent = 'Preencha todos os campos antes de enviar!';
+                cadMensagem.className = 'mensagem-servidor msg-erro';
                 return;
             }
 
-            cadMensagem.innerText = 'Dados enviados aguarde 5 segundos...';
-            cadMensagem.style.color = 'orange';
+            cadMensagem.textContent = 'Dados enviados, aguarde 5 segundos...';
+            cadMensagem.className = 'mensagem-servidor msg-aguardando';
+            btnCadastro.disabled = true;
 
-            try{
+            try {
                 const respostaBE = await fetch('http://localhost:5500/cadastro', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         usuario: usuario,
                         email: email,
@@ -77,23 +112,29 @@
 
                 const dados = await respostaBE.json();
 
-                if(!respostaBE.ok) {
-                    cadMensagem.innerText = `${dados.erro}`;
-                    cadMensagem.style.color = 'red';
+                if (!respostaBE.ok) {
+                    cadMensagem.textContent = dados.erro || 'Erro no cadastro';
+                    cadMensagem.className = 'mensagem-servidor msg-erro';
+                    btnCadastro.disabled = false;
                     return;
                 }
 
-                cadMensagem.innerText = `${dados.mensagem}: ${dados.perfil}`;
-                cadMensagem.style.color = 'green';
+                cadMensagem.textContent = `${dados.mensagem}: ${dados.perfil}`;
+                cadMensagem.className = 'mensagem-servidor msg-sucesso';
 
                 usuarioEntrada.value = '';
                 emailEntrada.value = '';
                 senhaEntrada.value = '';
-            }
-            catch(erro) {
+
+                setTimeout(() => {
+                    modalPosCadastro.hidden = false;
+                }, 800);
+            } catch (erro) {
                 console.error('Erro na requisição:', erro);
-                cadMensagem.innerText = 'Erro ao conectar com o servidor!!';
-                cadMensagem.style.color = 'red';
+                cadMensagem.textContent = 'Erro ao conectar com o servidor!!';
+                cadMensagem.className = 'mensagem-servidor msg-erro';
+            } finally {
+                btnCadastro.disabled = false;
             }
         });
     </script>

@@ -33,11 +33,18 @@ body {
     position: sticky;
     top: 0;
     background-color: rgba(30, 30, 36, 0.55);
-    padding: 20px;
+    padding: 16px 12px;
     text-align: center;
     box-shadow: 0 4px 10px 0 var(--azul);
     z-index: 1000;
     backdrop-filter: blur(8px);
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 .link {
@@ -46,8 +53,9 @@ body {
     color: white;
     font-size: 1.8rem;
     letter-spacing: 2px;
-    margin: 0 15px;
+    margin: 0;
     transition: color 0.3s ease;
+    flex-shrink: 0;
 }
 
 .link:hover {
@@ -541,14 +549,8 @@ footer {
     box-shadow: 0 12px 25px rgba(255, 69, 0, 0.35);
 }
 
-.mensagem {
-    text-align: center;
-    font-family: 'Roboto', sans-serif;
-    letter-spacing: 1px;
-    font-size: 0.95rem;
-    min-height: 1.4rem;
-    margin-top: 12px;
-}
+/* .mensagem base tratada mais abaixo (caixa centralizada + cores) */
+
 
 /* =========================================================
    INPUTS GERAIS (fallback)
@@ -589,9 +591,15 @@ input:focus {
 }
 
 @media (max-width: 600px) {
+    .menu {
+        padding: 12px 8px;
+        gap: 8px;
+    }
+
     .link {
-        font-size: 1.2rem;
-        margin: 0 8px;
+        font-size: 1rem;
+        letter-spacing: 1px;
+        margin: 0;
     }
 
     .vitrine {
@@ -622,5 +630,265 @@ input:focus {
     #boasVindas {
         font-size: 1.3rem;
         padding: 14px;
+    }
+}
+
+/* =========================================================
+   MENSAGENS DO SERVIDOR (cadastro / login)
+   Caixa centralizada + cor no texto
+   ========================================================= */
+.mensagem,
+.mensagem-servidor {
+    display: block;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    letter-spacing: 1px;
+    font-size: 0.95rem;
+    min-height: 1.4rem;
+    margin: 14px auto 0;
+    padding: 12px 16px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 12px;
+    border: 2px solid var(--azul);
+    background-color: rgba(3, 51, 124, 0.25);
+    word-wrap: break-word;
+    transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.mensagem:empty,
+.mensagem-servidor:empty {
+    padding: 0;
+    min-height: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Cores do texto da resposta do servidor */
+.msg-erro {
+    color: #ff6b6b;
+    border-color: rgba(255, 80, 80, 0.55);
+    background-color: rgba(255, 80, 80, 0.1);
+}
+
+.msg-sucesso {
+    color: #5dff8a;
+    border-color: rgba(40, 200, 100, 0.5);
+    background-color: rgba(40, 200, 100, 0.1);
+}
+
+.msg-aguardando {
+    color: var(--brilho);
+    border-color: rgba(255, 204, 0, 0.45);
+    background-color: rgba(255, 204, 0, 0.08);
+}
+
+/* =========================================================
+   OVERLAY / MODAL DE AUTENTICAÇÃO (padrão do site)
+   ========================================================= */
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11, 11, 13, 0.88);
+    background-image: radial-gradient(circle at 50% 40%, rgba(3, 51, 124, 0.35) 0%, rgba(11, 11, 13, 0.9) 60%);
+    backdrop-filter: blur(8px);
+    padding: 20px;
+}
+
+.auth-overlay[hidden] {
+    display: none !important;
+}
+
+.auth-modal {
+    position: relative;
+    z-index: 1;
+    background-color: var(--fundo-card);
+    border: 3px solid var(--azul);
+    border-radius: 16px;
+    padding: 40px 35px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.5s ease;
+}
+
+.auth-modal:hover {
+    border-color: var(--cyan);
+    box-shadow: 0 15px 35px rgba(0, 204, 255, 0.3);
+}
+
+.auth-modal-icon {
+    font-size: 2.6rem;
+    margin-bottom: 6px;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px var(--laranja));
+}
+
+.auth-modal-titulo {
+    font-family: 'Bangers', cursive;
+    letter-spacing: 5px;
+    font-size: 2.2rem;
+    color: var(--brilho);
+    text-shadow: 0 0 12px var(--laranja), 0 0 24px rgba(255, 69, 0, 0.45);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.auth-modal-texto {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.05rem;
+    color: #c8c8d0;
+    line-height: 1.5;
+    margin: 10px 0 22px;
+    letter-spacing: 0.5px;
+}
+
+.auth-modal-texto strong {
+    color: var(--brilho);
+    text-shadow: 0 0 8px rgba(255, 204, 0, 0.3);
+}
+
+.auth-modal-botoes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.auth-btn {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    font-family: 'Bangers', cursive;
+    letter-spacing: 2px;
+    font-size: 1.15rem;
+    padding: 14px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.auth-btn-primario {
+    background: linear-gradient(135deg, var(--azul) 0%, #021f4d 100%);
+    color: aliceblue;
+    border: 2px solid var(--azul);
+}
+
+.auth-btn-primario:hover {
+    background: linear-gradient(135deg, var(--laranja) 0%, var(--azul) 100%);
+    border-color: var(--cyan);
+    box-shadow: 0 12px 25px rgba(255, 69, 0, 0.35);
+    transform: translateY(-5px);
+    color: white;
+}
+
+.auth-btn-secundario {
+    background-color: var(--azul);
+    color: aliceblue;
+    border: 2px solid var(--azul);
+}
+
+.auth-btn-secundario:hover {
+    transform: translateY(-5px);
+    border-color: var(--cyan);
+    box-shadow: 0 12px 25px rgba(0, 204, 255, 0.5);
+    color: white;
+}
+
+.auth-btn-sair {
+    margin-top: 16px;
+    background: none;
+    border: none;
+    color: #a8a8b3;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    letter-spacing: 1px;
+    padding: 6px;
+    transition: color 0.3s ease;
+}
+
+.auth-btn-sair:hover {
+    color: var(--laranja);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Mensagens do chat diferenciadas */
+.msg-user {
+    align-self: flex-end;
+    background-color: rgba(255, 69, 0, 0.18);
+    border-color: var(--laranja);
+}
+
+.msg-kratos {
+    align-self: flex-start;
+    background-color: rgba(3, 51, 124, 0.45);
+    border-color: var(--cyan);
+}
+
+.msg-system {
+    align-self: center;
+    background-color: rgba(255, 80, 80, 0.15);
+    border-color: #ff6b6b;
+    color: #ffb0b0;
+    max-width: 90%;
+    font-size: 0.88rem;
+}
+
+@media (max-width: 600px) {
+    .auth-modal {
+        padding: 30px 22px;
+    }
+
+    .auth-modal-titulo {
+        font-size: 1.8rem;
+        letter-spacing: 3px;
+    }
+
+    .auth-modal-texto {
+        font-size: 0.95rem;
+    }
+}
+.link-logout {
+    background: none;
+    border: none;
+    font-family: 'Bangers', cursive;
+    text-decoration: none;
+    color: white;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin: 0;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.3s ease;
+    vertical-align: baseline;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.link-logout:hover {
+    color: var(--laranja);
+    transform: none;
+    box-shadow: none;
+    border-color: transparent;
+}
+
+@media (max-width: 600px) {
+    .link-logout {
+        font-size: 1rem;
+        letter-spacing: 1px;
+        margin: 0;
     }
 }

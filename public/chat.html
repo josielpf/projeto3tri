@@ -2,80 +2,144 @@
 <html lang="pt-br">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <nav class="menu">
-    <a class="link" href="index.html">Home</a>
-    <a class="link" href="galeria.html">Galeria</a>
-    <a class="link" href="chat.html">Chat</a>
-    <a class="link" href="cadastro5.html">Cadastro</a>
-    <a class="link" href="login5.html">Login</a>
-  </nav>
+    <nav class="menu">
+        <a class="link" href="index.html">Home</a>
+        <a class="link" href="galeria.html">Galeria</a>
+        <a class="link" href="chat.html">Chat</a>
+        <a class="link" id="linkCadastro" href="cadastro5.html">Cadastro</a>
+        <a class="link" href="login5.html">Login</a>
+        <button type="button" id="btnLogout" class="link link-logout" hidden>Log-out</button>
+    </nav>
 
-  <div class="chat-container">
-    <h2 id="boasVindas"> Bem vindo ao porão</h2>
-    <div id="caixaChat"></div>
-
-    <div id="inputArea">
-      <input type="text" id="mensagem" placeholder="Digite algo">
-      <button id="btnEnviar">Enviar</button>
+    <div id="authOverlay" class="auth-overlay" hidden>
+        <div class="auth-modal">
+            <div class="auth-modal-icon">🔒</div>
+            <h2 class="auth-modal-titulo">Acesso restrito</h2>
+            <p class="auth-modal-texto">
+                Para conversar com Kratos no chat, você precisa estar cadastrado e logado.
+            </p>
+            <div class="auth-modal-botoes">
+                <a href="cadastro5.html" class="auth-btn auth-btn-primario">Criar conta</a>
+                <a href="login5.html" class="auth-btn auth-btn-secundario">Já tenho conta — Login</a>
+            </div>
+            <button type="button" id="btnSairOverlay" class="auth-btn-sair">Voltar ao site</button>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const usuarioLogado = 'Josiel'
-    document.querySelector('#boasVindas').textContent = `${usuarioLogado}, bem vindo`
+    <div class="chat-container" id="areaChat">
+        <h2 id="boasVindas">Bem vindo ao Chat</h2>
+        <div id="caixaChat"></div>
 
-    const caixaChat = document.querySelector('#caixaChat')
-    const inputMensagem = document.querySelector('#mensagem')
-    const btnEnviar = document.querySelector('#btnEnviar')
+        <div id="inputArea">
+            <input type="text" id="mensagem" placeholder="Digite algo">
+            <button id="btnEnviar">Enviar</button>
+        </div>
+    </div>
+    <footer>
+        <p>©Desenvolvido por Josiel Pereira Filho</p>
+    </footer>
+    <script>
+        const usuarioLogado = localStorage.getItem('usuarioLogado');
+        const authOverlay = document.querySelector('#authOverlay');
+        const areaChat = document.querySelector('#areaChat');
+        const btnSairOverlay = document.querySelector('#btnSairOverlay');
+        const linkCadastro = document.querySelector('#linkCadastro');
+        const btnLogout = document.querySelector('#btnLogout');
 
-    const historicoConversa = []
-
-    function mensagemTela(usuario, texto) {
-      const textoFinal = document.createElement('p')
-      textoFinal.className = 'msg'
-      textoFinal.textContent = `${usuario}: ${texto}`
-      caixaChat.appendChild(textoFinal)
-    }
-
-    btnEnviar.addEventListener('click', async () => {
-      const textoMensagem = inputMensagem.value
-      if (!textoMensagem) return
-
-      mensagemTela(usuarioLogado, textoMensagem)
-      historicoConversa.push({ role: 'user', content: textoMensagem })
-
-      inputMensagem.value = ''
-      btnEnviar.disabled = true
-
-      try {
-        const respostaServidor = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ historico: historicoConversa })
-        })
-
-        const dados = await respostaServidor.json()
-        if (!respostaServidor.ok) {
-          mensagemTela('system', dados.erro)
-          return
+        if (usuarioLogado) {
+            linkCadastro.hidden = true;
+            btnLogout.hidden = false;
+            authOverlay.hidden = true;
+            document.querySelector('#boasVindas').textContent = `${usuarioLogado}, Bem Vindo ao Chat`;
+        } else {
+            linkCadastro.hidden = false;
+            btnLogout.hidden = true;
+            authOverlay.hidden = false;
+            areaChat.style.pointerEvents = 'none';
+            areaChat.style.filter = 'blur(4px)';
+            areaChat.style.opacity = '0.45';
         }
-        mensagemTela('Kratos', dados.resposta)
-      }
-      catch (erro) {
-        console.error('Erro ao enviar mensagem:', erro)
-      }
-      finally {
-        btnEnviar.disabled = false
-      }
-    })
-  </script>
+
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('usuarioLogado');
+            localStorage.removeItem('emailLogado');
+            window.location.href = 'index.html';
+        });
+
+        btnSairOverlay?.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        const caixaChat = document.querySelector('#caixaChat');
+        const inputMensagem = document.querySelector('#mensagem');
+        const btnEnviar = document.querySelector('#btnEnviar');
+        const historicoConversa = [];
+
+        function mensagemTela(usuario, texto) {
+            const textoFinal = document.createElement('p');
+            textoFinal.className = 'msg';
+            if (usuario === 'Kratos') {
+                textoFinal.classList.add('msg-kratos');
+            } else if (usuario === 'system') {
+                textoFinal.classList.add('msg-system');
+            } else {
+                textoFinal.classList.add('msg-user');
+            }
+            textoFinal.textContent = `${usuario}: ${texto}`;
+            caixaChat.appendChild(textoFinal);
+            caixaChat.scrollTop = caixaChat.scrollHeight;
+        }
+
+        btnEnviar.addEventListener('click', async () => {
+            if (!usuarioLogado) {
+                authOverlay.hidden = false;
+                return;
+            }
+
+            const textoMensagem = inputMensagem.value.trim();
+            if (!textoMensagem) return;
+
+            mensagemTela(usuarioLogado, textoMensagem);
+            historicoConversa.push({ role: 'user', content: textoMensagem });
+
+            inputMensagem.value = '';
+            btnEnviar.disabled = true;
+
+            try {
+                const respostaServidor = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ historico: historicoConversa })
+                });
+
+                const dados = await respostaServidor.json();
+                if (!respostaServidor.ok) {
+                    mensagemTela('system', dados.erro || 'Erro no servidor');
+                    return;
+                }
+                mensagemTela('Kratos', dados.resposta);
+                historicoConversa.push({ role: 'assistant', content: dados.resposta });
+            } catch (erro) {
+                console.error('Erro ao enviar mensagem:', erro);
+                mensagemTela('system', 'Erro ao conectar com o servidor');
+            } finally {
+                btnEnviar.disabled = false;
+            }
+        });
+
+        inputMensagem.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !btnEnviar.disabled) {
+                btnEnviar.click();
+            }
+        });
+    </script>
 </body>
 
 </html>

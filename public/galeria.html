@@ -13,8 +13,9 @@
         <a class="link" href="index.html">Home</a>
         <a class="link" href="galeria.html">Galeria</a>
         <a class="link" href="chat.html">Chat</a>
-        <a class="link" href="cadastro5.html">Cadastro</a>
+        <a class="link" id="linkCadastro" href="cadastro5.html">Cadastro</a>
         <a class="link" href="login5.html">Login</a>
+        <button type="button" id="btnLogout" class="link link-logout" hidden>Log-out</button>
     </nav>
 
     <div class="vitrine">
@@ -82,10 +83,27 @@
             <button class="btp">Ver Contos</button>
         </article>
 
-
-
     </div>
     <footer>©Desenvolvido por Josiel Pereira Filho</footer>
+    <script>
+        const usuarioLogado = localStorage.getItem('usuarioLogado');
+        const linkCadastro = document.querySelector('#linkCadastro');
+        const btnLogout = document.querySelector('#btnLogout');
+
+        if (usuarioLogado) {
+            linkCadastro.hidden = true;
+            btnLogout.hidden = false;
+        } else {
+            linkCadastro.hidden = false;
+            btnLogout.hidden = true;
+        }
+
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('usuarioLogado');
+            localStorage.removeItem('emailLogado');
+            window.location.href = 'index.html';
+        });
+    </script>
 </body>
 
 </html>
